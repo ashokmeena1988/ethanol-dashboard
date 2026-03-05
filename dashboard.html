@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⛽ ETHANOL Dashboard – Live</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#04080f; --bg2:#080f1c; --panel:#0c1526; --panel2:#101d30;
+  --border:#1a3050; --border2:#0e2040;
+  --t1:#e8f0fe; --t2:#8ba3c4; --t3:#4a6680;
+  --a1:#00c6ff; --a2:#f7b500; --a3:#00e676; --a4:#ff4d6d; --a5:#b388ff; --a6:#ff7043;
+}
+[data-theme="ocean"]{--a1:#00c6ff;--a2:#0072ff;--a3:#00e5ff;--a4:#18ffff;--a5:#40c4ff;--a6:#0091ea}
+[data-theme="fire"] {--a1:#ff6d00;--a2:#ffab00;--a3:#ff3d00;--a4:#ff9100;--a5:#ffd740;--a6:#ff6e40}
+[data-theme="forest"]{--a1:#00e676;--a2:#69f0ae;--a3:#00bfa5;--a4:#b9f6ca;--a5:#1de9b6;--a6:#00c853}
+[data-theme="royal"]{--a1:#d500f9;--a2:#aa00ff;--a3:#e040fb;--a4:#ce93d8;--a5:#ea80fc;--a6:#7c4dff}
+[data-theme="light"]{--bg:#f0f4f8;--bg2:#e4ecf5;--panel:#fff;--panel2:#f7faff;--border:#c5d8f0;--border2:#d8e8f8;--t1:#0d1f33;--t2:#3a5c7a;--t3:#6a8aaa}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t1);font-family:'Noto Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 15% 10%,rgba(0,198,255,.06) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(247,181,0,.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--a1)}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:200;background:linear-gradient(180deg,rgba(4,8,15,.98),rgba(8,15,28,.96));border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:60px;backdrop-filter:blur(20px);box-shadow:0 4px 30px rgba(0,0,0,.5)}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-icon{font-size:1.6rem}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:.6rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-top:-2px;font-family:'Noto Sans Devanagari',sans-serif}
+.topbar-center{flex:1;display:flex;max-width:400px}
+.srch{position:relative;flex:1}
+.srch input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--t1);padding:7px 14px 7px 36px;border-radius:8px;font-family:'Noto Sans',sans-serif;font-size:.82rem;outline:none;transition:border-color .2s,box-shadow .2s}
+.srch input:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(0,198,255,.18)}
+.srch input::placeholder{color:var(--t3)}
+.srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:.9rem}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.live-pill{display:flex;align-items:center;gap:5px;background:rgba(0,230,118,.1);border:1px solid var(--a3);padding:4px 10px;border-radius:20px;font-size:.65rem;color:var(--a3);font-weight:600;letter-spacing:1px}
+.live-dot{width:6px;height:6px;background:var(--a3);border-radius:50%;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.4)}}
+.cd-pill{background:var(--panel2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;font-size:.65rem;color:var(--a2)}
+.ibtn{background:var(--panel2);border:1px solid var(--border);color:var(--t2);padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .2s}
+.ibtn:hover{border-color:var(--a1);color:var(--a1);background:rgba(0,198,255,.08)}
+
+/* THEME BAR */
+.theme-bar{background:var(--panel);border-bottom:1px solid var(--border2);padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.theme-bar label{font-size:.65rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.th-btn{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .2s,border-color .2s}
+.th-btn:hover,.th-btn.active{transform:scale(1.3);border-color:#fff}
+.th-sep{width:1px;height:16px;background:var(--border);margin:0 4px}
+.lu{font-size:.65rem;color:var(--t3);margin-left:auto}
+.lu span{color:var(--a3)}
+
+/* FILTER ROW */
+.frow{background:var(--panel);border-bottom:1px solid var(--border2);padding:10px 24px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3)}
+.fg select{background:var(--panel2);border:1px solid var(--border);color:var(--t1);padding:6px 10px;border-radius:7px;font-family:'Noto Sans',sans-serif;font-size:.8rem;outline:none;min-width:120px;cursor:pointer;transition:border-color .2s}
+.fg select:focus{border-color:var(--a1)}
+.fg select option{background:var(--panel)}
+.btn-rst{padding:6px 14px;background:rgba(255,77,109,.1);color:var(--a4);border:1px solid var(--a4);border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;letter-spacing:.5px;align-self:flex-end;transition:all .2s}
+.btn-rst:hover{background:rgba(255,77,109,.2)}
+.fcnt{margin-left:auto;align-self:flex-end;font-size:.7rem;color:var(--t3);background:var(--panel2);border:1px solid var(--border);padding:4px 12px;border-radius:20px}
+.fcnt b{color:var(--a1)}
+
+/* MAIN */
+.main{padding:18px 24px 32px;position:relative;z-index:1}
+
+/* KPI */
+.krow{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.k1::before{background:var(--a1)}.kpi.k2::before{background:var(--a2)}.kpi.k3::before{background:var(--a3)}.kpi.k4::before{background:var(--a4)}.kpi.k5::before{background:var(--a5)}.kpi.k6::before{background:var(--a6)}
+.kico{position:absolute;right:12px;top:14px;font-size:1.8rem;opacity:.1}
+.klbl{font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);margin-bottom:6px;font-family:'Noto Sans Devanagari',sans-serif}
+.kval{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:1px;line-height:1;margin-bottom:2px}
+.kpi.k1 .kval{color:var(--a1)}.kpi.k2 .kval{color:var(--a2)}.kpi.k3 .kval{color:var(--a3)}.kpi.k4 .kval{color:var(--a4)}.kpi.k5 .kval{color:var(--a5)}.kpi.k6 .kval{color:var(--a6)}
+.ksub{font-size:.62rem;color:var(--t3)}
+.kbar{position:absolute;bottom:0;left:0;height:3px;background:var(--border2);right:0}
+.kbf{height:3px;transition:width 1s ease;border-radius:0 2px 2px 0}
+.kpi.k1 .kbf{background:var(--a1)}.kpi.k2 .kbf{background:var(--a2)}.kpi.k3 .kbf{background:var(--a3)}.kpi.k4 .kbf{background:var(--a4)}.kpi.k5 .kbf{background:var(--a5)}.kpi.k6 .kbf{background:var(--a6)}
+
+/* CHARTS */
+.cgrid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.cgrid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.cc{background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.cc.full{grid-column:1/-1}
+.chdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cttl{font-size:.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--a1);display:flex;align-items:center;gap:8px;font-weight:600}
+.cttl::before{content:'';display:inline-block;width:3px;height:13px;background:var(--a1);border-radius:2px}
+.ctbtn{background:var(--panel2);border:1px solid var(--border);color:var(--t3);padding:3px 8px;border-radius:5px;font-size:.65rem;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.ctbtn:hover{color:var(--a1);border-color:var(--a1)}
+canvas{max-height:240px}
+
+/* TABLE */
+.tcard{background:var(--panel);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.ttop{padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.tttl{font-size:.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--a1);display:flex;align-items:center;gap:8px;font-weight:600}
+.tttl::before{content:'';display:inline-block;width:3px;height:13px;background:var(--a1);border-radius:2px}
+.tacts{display:flex;gap:8px;align-items:center}
+.bexp{padding:5px 14px;background:rgba(0,198,255,.1);color:var(--a1);border:1px solid var(--a1);border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:all .2s}
+.bexp:hover{background:rgba(0,198,255,.2)}
+.tbadge{font-size:.68rem;color:var(--t3);background:var(--panel2);padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+.twrap{overflow-x:auto;max-height:340px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+thead{position:sticky;top:0;z-index:10}
+thead tr{background:var(--panel2)}
+th{padding:9px 12px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+th:hover{color:var(--a1)}
+th.sa::after{content:' ↑';color:var(--a1)}
+th.sd::after{content:' ↓';color:var(--a1)}
+td{padding:8px 12px;border-bottom:1px solid rgba(26,48,80,.5);white-space:nowrap;transition:background .1s;font-size:.78rem}
+tr:hover td{background:rgba(0,198,255,.04)}
+tr:last-child td{border-bottom:none}
+.tg{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:600}
+.te{background:rgba(0,198,255,.12);color:var(--a1)}
+.tq{color:var(--a3);font-weight:700}
+.tm{color:var(--a2)}
+.tbh{color:var(--a4);font-weight:600}
+.tbl{color:var(--a3)}
+.tfrk{background:rgba(255,112,67,.12);color:var(--a6)}
+
+/* PAGINATION */
+.pgn{display:flex;justify-content:center;gap:5px;padding:12px;flex-wrap:wrap}
+.pg{padding:4px 10px;background:var(--panel2);border:1px solid var(--border);color:var(--t1);border-radius:4px;cursor:pointer;font-size:.75rem;transition:all .15s}
+.pg:hover,.pg.active{background:var(--a1);color:#000;border-color:var(--a1);font-weight:700}
+.pg:disabled{opacity:.3;cursor:default}
+.pi{padding:4px 10px;color:var(--t3);font-size:.75rem}
+
+/* LOADER */
+#ldr{position:fixed;inset:0;background:rgba(4,8,15,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:9999}
+.spn{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--a1);border-radius:50%;animation:spn .7s linear infinite}
+@keyframes spn{to{transform:rotate(360deg)}}
+#ldr p{color:var(--t3);font-size:.85rem;font-family:'Noto Sans Devanagari',sans-serif}
+.prg{width:240px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.prf{height:3px;background:linear-gradient(90deg,var(--a1),var(--a2));animation:prf 2s ease-in-out infinite;border-radius:2px}
+@keyframes prf{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}
+
+/* ERROR + EMPTY */
+.errb{background:rgba(255,77,109,.08);border:1px solid var(--a4);border-radius:10px;padding:20px;margin:20px 0;text-align:center}
+.errb h3{color:var(--a4);margin-bottom:8px;font-size:1rem}
+.errb p{font-size:.8rem;color:var(--t2);font-family:'Noto Sans Devanagari',sans-serif}
+.empty{text-align:center;padding:40px 20px;color:var(--t3)}
+.empty .ei{font-size:3rem;opacity:.3;margin-bottom:12px}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.kpi{animation:fadeUp .4s ease both}
+.kpi:nth-child(1){animation-delay:.05s}.kpi:nth-child(2){animation-delay:.1s}.kpi:nth-child(3){animation-delay:.15s}
+.kpi:nth-child(4){animation-delay:.2s}.kpi:nth-child(5){animation-delay:.25s}.kpi:nth-child(6){animation-delay:.3s}
+.cc,.tcard{animation:fadeUp .4s ease both}
+
+/* RESPONSIVE */
+@media(max-width:1200px){.krow{grid-template-columns:repeat(4,1fr)}.cgrid{grid-template-columns:1fr}.cgrid2{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.topbar{padding:0 14px;height:52px}.topbar-center{display:none}.main{padding:12px 14px 24px}.krow{grid-template-columns:repeat(2,1fr)}.cgrid2{grid-template-columns:1fr}.frow{padding:8px 14px}}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="ldr">
+  <div class="spn"></div>
+  <p id="ldrMsg">⛽ Google Sheet से data load हो रहा है...</p>
+  <div class="prg"><div class="prf"></div></div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">⛽</div>
+    <div>
+      <div class="logo-text">ETHANOL DASHBOARD</div>
+      <div class="logo-sub">All Liffting Data • Auto Live</div>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="srch">
+      <span class="srch-ic">🔍</span>
+      <input type="text" id="gSearch" placeholder="Agency, Truck, Godown, District खोजें..." oninput="applyAll()">
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <div class="cd-pill">⟳ <span id="cdTxt">—</span></div>
+    <button class="ibtn" onclick="fetchData(true)" title="अभी Refresh करें">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- THEME BAR -->
+<div class="theme-bar">
+  <label>🎨 Color Theme:</label>
+  <div class="th-btn active" data-t="" style="background:linear-gradient(135deg,#00c6ff,#f7b500)" title="Default" onclick="setTheme(this,'')"></div>
+  <div class="th-btn" data-t="ocean" style="background:linear-gradient(135deg,#00c6ff,#0072ff)" title="Ocean Blue" onclick="setTheme(this,'ocean')"></div>
+  <div class="th-btn" data-t="fire" style="background:linear-gradient(135deg,#ff6d00,#ffab00)" title="Fire Orange" onclick="setTheme(this,'fire')"></div>
+  <div class="th-btn" data-t="forest" style="background:linear-gradient(135deg,#00e676,#00bfa5)" title="Forest Green" onclick="setTheme(this,'forest')"></div>
+  <div class="th-btn" data-t="royal" style="background:linear-gradient(135deg,#d500f9,#7c4dff)" title="Royal Purple" onclick="setTheme(this,'royal')"></div>
+  <div class="th-sep"></div>
+  <div class="th-btn" data-t="light" style="background:linear-gradient(135deg,#e0e8f8,#c5d8f0);border:2px solid #aaa" title="Light Mode" onclick="setTheme(this,'light')"></div>
+  <div class="lu">Last Updated: <span id="luTime">—</span></div>
+</div>
+
+<!-- FILTER ROW -->
+<div class="frow">
+  <div class="fg"><label>📅 RO Lifting Month</label>
+    <select id="fMonth" onchange="applyAll()"><option value="">— सभी महीने —</option></select></div>
+  <div class="fg"><label>🏭 Godown / Silo</label>
+    <select id="fGodown" onchange="applyAll()"><option value="">— सभी Godown —</option></select></div>
+  <div class="fg"><label>📋 ESY Year</label>
+    <select id="fESY" onchange="applyAll()"><option value="">— सभी ESY —</option></select></div>
+  <div class="fg"><label>🔷 Allocation Quarter</label>
+    <select id="fQuarter" onchange="applyAll()"><option value="">— सभी Quarter —</option></select></div>
+  <div class="fg"><label>🌾 FRK Type</label>
+    <select id="fFRK" onchange="applyAll()"><option value="">— सभी Type —</option></select></div>
+  <div class="fg"><label>🏢 Agency / Dept</label>
+    <select id="fAgency" onchange="applyAll()"><option value="">— सभी Agency —</option></select></div>
+  <div class="fg"><label>📍 District</label>
+    <select id="fDistrict" onchange="applyAll()"><option value="">— सभी District —</option></select></div>
+  <div class="fg"><label>🔗 Link FSD</label>
+    <select id="fLinkFSD" onchange="applyAll()"><option value="">— सभी FSD —</option></select></div>
+  <button class="btn-rst" onclick="resetAll()">✕ सभी Reset</button>
+  <div class="fcnt">दिख रहे: <b id="showCnt">0</b> / कुल: <b id="totCnt">0</b></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="krow">
+    <div class="kpi k2"><div class="kico">📋</div>
+      <div class="klbl">कुल RO Issue Qty</div>
+      <div class="kval" id="k1">—</div><div class="ksub">Total Issued MT</div>
+      <div class="kbar"><div class="kbf" id="kb1" style="width:0"></div></div></div>
+    <div class="kpi k1"><div class="kico">🚛</div>
+      <div class="klbl">कुल Lifting</div>
+      <div class="kval" id="k2">—</div><div class="ksub">Metric Tonnes (MT)</div>
+      <div class="kbar"><div class="kbf" id="kb2" style="width:0"></div></div></div>
+    <div class="kpi k4"><div class="kico">📦</div>
+      <div class="klbl">RO Balance</div>
+      <div class="kval" id="k3">—</div><div class="ksub">Pending MT</div>
+      <div class="kbar"><div class="kbf" id="kb3" style="width:0"></div></div></div>
+    <div class="kpi k3"><div class="kico">🏭</div>
+      <div class="klbl">Active Godowns</div>
+      <div class="kval" id="k4">—</div><div class="ksub">Unique Locations</div>
+      <div class="kbar"><div class="kbf" id="kb4" style="width:0"></div></div></div>
+    <div class="kpi k5"><div class="kico">🎒</div>
+      <div class="klbl">Total Bags</div>
+      <div class="kval" id="k5">—</div><div class="ksub">Lifting Bags Count</div>
+      <div class="kbar"><div class="kbf" id="kb5" style="width:0"></div></div></div>
+    <div class="kpi k6"><div class="kico">⚖️</div>
+      <div class="klbl">Avg / Transaction</div>
+      <div class="kval" id="k6">—</div><div class="ksub">MT per RO</div>
+      <div class="kbar"><div class="kbf" id="kb6" style="width:0"></div></div></div>
+    <div class="kpi k5"><div class="kico">📝</div>
+      <div class="klbl">Offline RO Count</div>
+      <div class="kval" id="k7">—</div><div class="ksub">Unique Offline ROs</div>
+      <div class="kbar"><div class="kbf" id="kb7" style="width:0"></div></div></div>
+  </div>
+
+  <!-- ROW 1 -->
+  <div class="cgrid">
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">📅 Month-wise Lifting (MT)</div>
+        <button class="ctbtn" onclick="tog('monthly')">Bar ↔ Line</button>
+      </div>
+      <canvas id="cMonthly"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🏭 Godown Distribution</div>
+        <button class="ctbtn" onclick="tog('godown')">Donut ↔ Pie</button>
+      </div>
+      <canvas id="cGodown"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="cgrid2">
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">📋 ESY Year Comparison</div>
+        <button class="ctbtn" onclick="tog('esy')">Bar ↔ Donut</button>
+      </div>
+      <canvas id="cESY"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🔷 Quarter × ESY Wise</div>
+        <button class="ctbtn" onclick="tog('quarter')">Grouped ↔ Stacked</button>
+      </div>
+      <canvas id="cQuarter"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr"><div class="cttl">📈 Fortnight Trend</div></div>
+      <canvas id="cFortnight"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 3: Crop Year + Link FSD -->
+  <div class="cgrid" style="margin-bottom:14px">
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🌾 Crop Year Wise Lifting (MT)</div>
+        <button class="ctbtn" onclick="tog('cropYear')">Bar ↔ Donut</button>
+      </div>
+      <canvas id="cCropYear"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🔗 Link FSD Wise Lifting (MT)</div>
+        <button class="ctbtn" onclick="tog('linkFSD')">Bar ↔ Line</button>
+      </div>
+      <canvas id="cLinkFSD"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 4: District + Agency + FRK + Commodity -->
+  <div class="cgrid2" style="margin-bottom:14px">
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">📍 Party District Wise Lifting</div>
+        <button class="ctbtn" onclick="tog('district')">Bar ↔ Donut</button>
+      </div>
+      <canvas id="cDistrict"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🏢 Top Agency Lifting</div>
+        <button class="ctbtn" onclick="tog('agency')">Bar ↔ Donut</button>
+      </div>
+      <canvas id="cAgency"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🌾 FRK vs NON-FRK</div>
+        <button class="ctbtn" onclick="tog('frk')">Donut ↔ Pie</button>
+      </div>
+      <canvas id="cFRK"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 4B: Depot x Fortnight Interactive Panel -->
+  <div class="cc full" style="margin-bottom:14px">
+    <div class="chdr" style="flex-wrap:wrap;gap:10px;row-gap:8px">
+      <div class="cttl">&#127959; Depot (Godown/Silo) &mdash; Fortnight Wise Lifting</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-left:auto">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px">&#128197; Month</label>
+          <select id="depotMonthFilter" onchange="updDepotChart()" style="background:var(--panel2);border:1px solid var(--border);color:var(--t1);padding:5px 10px;border-radius:7px;font-size:.78rem;outline:none;min-width:130px;cursor:pointer">
+            <option value="">&#8212; All Months &#8212;</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px">&#127959; Depot</label>
+          <select id="depotGodownFilter" onchange="updDepotChart()" style="background:var(--panel2);border:1px solid var(--border);color:var(--t1);padding:5px 10px;border-radius:7px;font-size:.78rem;outline:none;min-width:160px;cursor:pointer">
+            <option value="">&#8212; All Depots &#8212;</option>
+          </select>
+        </div>
+        <button class="ctbtn" style="align-self:flex-end" onclick="tog('depot')">Bar &#8596; Line</button>
+      </div>
+    </div>
+    <canvas id="cDepot" style="max-height:260px"></canvas>
+  </div>
+
+  <!-- ROW 5: RO Issue vs Lifting vs Balance + ESY Wise Lifting -->
+  <div class="cgrid" style="margin-bottom:14px">
+    <div class="cc full">
+      <div class="chdr">
+        <div class="cttl">📊 Month-wise: RO Issue vs Lifting vs Balance</div>
+        <button class="ctbtn" onclick="tog('compare')">Bar ↔ Line</button>
+      </div>
+      <canvas id="cCompare" style="max-height:260px"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 5B: Revenue District + ESY Month-wise -->
+  <div class="cgrid" style="margin-bottom:14px">
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">🗺️ Revenue District Wise Lifting</div>
+        <button class="ctbtn" onclick="tog('revDist')">Bar ↔ Donut</button>
+      </div>
+      <canvas id="cRevDist"></canvas>
+    </div>
+    <div class="cc">
+      <div class="chdr">
+        <div class="cttl">📋 ESY × Month Wise Lifting</div>
+        <button class="ctbtn" onclick="tog('esyMonth')">Grouped ↔ Stacked</button>
+      </div>
+      <canvas id="cEsyMonth"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 6: Agency ESY Comparison (full width) -->
+  <div class="cgrid" style="margin-bottom:14px">
+    <div class="cc full">
+      <div class="chdr">
+        <div class="cttl">🏢 Agency — ESY Wise Lifting Comparison (Top 12)</div>
+        <button class="ctbtn" onclick="tog('agencyESY')">Grouped ↔ Stacked</button>
+      </div>
+      <canvas id="cAgencyESY" style="max-height:280px"></canvas>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tcard">
+    <div class="ttop">
+      <div class="tttl">📄 All Lifting Records</div>
+      <div class="tacts">
+        <div class="tbadge" id="tbadge">0 Records</div>
+      </div>
+    </div>
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('srno')">#</th>
+          <th onclick="sortBy('frk')">FRK/NON-FRK</th>
+          <th onclick="sortBy('cropYear')">Crop Year</th>
+          <th onclick="sortBy('esy')">ESY</th>
+          <th onclick="sortBy('allocQ')">Alloc. Q</th>
+          <th onclick="sortBy('month')">RO Lifting Month</th>
+          <th onclick="sortBy('actualDate')">Actual Date</th>
+          <th onclick="sortBy('dosRO')">DOS RO No</th>
+          <th onclick="sortBy('offlineRO')">Offline RO No</th>
+          <th onclick="sortBy('roIssueMonth')">RO Issue Month</th>
+          <th onclick="sortBy('agency')">Agency / Department</th>
+          <th onclick="sortBy('district')">Party District</th>
+          <th onclick="sortBy('linkFSD')">Link FSD</th>
+          <th onclick="sortBy('godown')">Godown / Silo</th>
+          <th onclick="sortBy('commodity')">Commodity</th>
+          <th onclick="sortBy('roIssueQty')">RO Issue Qty (MT)</th>
+          <th onclick="sortBy('bags')">Bags</th>
+          <th onclick="sortBy('liftQty')">Lifting MT</th>
+          <th onclick="sortBy('truck')">Truck No</th>
+          <th onclick="sortBy('balance')">RO Balance (MT)</th>
+          <th onclick="sortBy('fortnight')">Fortnight</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="emptyT" class="empty" style="display:none">
+      <div class="ei">🔍</div>
+      <p>कोई record नहीं मिला — filters बदलकर देखें</p>
+    </div>
+    <div class="pgn" id="pgn"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════
+const SHEET_ID   = '1GPcAW5SRi2RB0v4z0Oy5FO9rCr8-SHnpgm3YLgHsmvc';
+const SHEET_GID  = '0';
+const SHEET_NAME = 'Dashboard';
+const REFRESH_S  = 60;
+// ══════════════════════════════
+
+let allData=[], filteredData=[];
+let sortKey='srno', sortAsc=true, pg=1;
+const PG=50;
+let charts={}, ctypes={monthly:'bar',godown:'doughnut',esy:'bar',cropYear:'bar',linkFSD:'bar',district:'bar',agency:'bar',frk:'doughnut',compare:'bar',quarter:'grouped',agencyESY:'grouped',depot:'bar',revDist:'bar',esyMonth:'grouped'};
+let cdSec=REFRESH_S, cdTmr;
+
+window.onload = () => { fetchData(true); startCD(); };
+
+function fetchData(show=false) {
+  if(show) showLdr('⛽ Google Sheet से data load हो रहा है...');
+
+  // Remove old script tags
+  document.querySelectorAll('.gviz-script').forEach(s => s.remove());
+
+  const nc = Date.now();
+  window._gvizCallback = function(json) {
+    try {
+      if(!json.table || !json.table.rows || json.table.rows.length === 0) {
+        showErr('Sheet connected पर rows नहीं मिलीं। Check करें कि "All Liffting Data" sheet में data है।');
+        return;
+      }
+      parseGviz(json.table);
+      document.getElementById('luTime').textContent = new Date().toLocaleTimeString('hi-IN');
+      hideLdr();
+      cdSec = REFRESH_S;
+    } catch(e) {
+      showErr('Parse error: ' + e.message);
+    }
+  };
+
+  window._gvizError = function() {
+    showErr('Sheet load नहीं हुई।<br>Sheet को <b>"Anyone with the link → Viewer"</b> पर set करें।<br><small>Sheet ID: ' + SHEET_ID + ' | GID: ' + SHEET_GID + '</small>');
+  };
+
+  // Method 1: JSONP by GID (works on file://)
+  const script = document.createElement('script');
+  script.className = 'gviz-script';
+  script.onerror = function() {
+    this.remove();
+    // Method 2: JSONP by Sheet Name
+    const s2 = document.createElement('script');
+    s2.className = 'gviz-script';
+    s2.onerror = function() {
+      this.remove();
+      window._gvizError();
+    };
+    s2.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:_gvizCallback&sheet=${encodeURIComponent(SHEET_NAME)}&nc=${nc}`;
+    document.head.appendChild(s2);
+  };
+  script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:_gvizCallback&gid=${SHEET_GID}&nc=${nc}`;
+  document.head.appendChild(script);
+}
+
+
+// Parse Google Visualization JSON format
+function parseGviz(table) {
+  const cols = table.cols.map(c => (c.label||c.id||'').trim());
+  allData = [];
+  for(const row of (table.rows||[])) {
+    if(!row.c) continue;
+    const obj = {};
+    cols.forEach((col, i) => {
+      const cell = row.c[i];
+      let v = '';
+      if(cell) v = (cell.f !== undefined && cell.f !== null) ? cell.f : (cell.v !== null && cell.v !== undefined ? cell.v : '');
+      obj[col] = String(v).trim();
+    });
+    const r = mapRow(obj);
+    if(r.liftQty > 0 || r.agency || r.month) allData.push(r);
+  }
+  fillDrops();
+  applyAll();
+}
+
+function parseCSV(csv) {
+  const lines = csv.split('\n').filter(l=>l.trim());
+  const hdrs  = pLine(lines[0]);
+  allData=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=pLine(lines[i]);
+    const obj={};
+    hdrs.forEach((h,j)=>{ obj[h.trim().replace(/^"|"$/g,'')]=(vals[j]||'').replace(/^"|"$/g,'').trim(); });
+    const r=mapRow(obj);
+    if(r.liftQty > 0 || r.agency || r.month) allData.push(r);
+  }
+  fillDrops();
+  applyAll();
+}
+
+function pLine(line){
+  const r=[];let c='',q=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){q=!q;}
+    else if(line[i]===','&&!q){r.push(c);c='';}
+    else c+=line[i];
+  }
+  r.push(c);return r;
+}
+
+function mapRow(r){
+  const g=k=>{
+    // Try exact key, then trimmed key
+    if(r[k]!==undefined) return (r[k]||'').toString().trim();
+    const tk = Object.keys(r).find(rk=>rk.trim()===k.trim());
+    return tk ? (r[tk]||'').toString().trim() : '';
+  };
+  const n=k=>parseFloat(g(k).replace(/,/g,'').replace(/[^\d.-]/g,''))||0;
+  return {
+    srno       : g('Sr No'),
+    frk        : g('FRK / NON-FRK'),
+    cropYear   : g('Crop Year'),
+    esy        : g('ESY'),
+    allocQ     : g('Allocation Q'),
+    month      : g('Actual RO Liffting Month'),
+    actualMonth: g('Actual RO Liffting Month'),
+    dateLift   : g('Actual Date liffting'),
+    actualDate : g('Actual Date liffting'),
+    dosRO      : g('DOS RO NO'),
+    offlineRO  : g('Offline RO Number'),
+    roIssueMonth: g('Actual RO Issue Month'),
+    agency     : g('Name of Agencey/Department'),
+    district   : g('Party District'),
+    linkFSD    : g('Link FSD'),
+    revDistrict: g('Revenu District'),
+    godown     : g('Lifftingt Name of Godwon / Silo'),
+    commodity  : g('Commodity'),
+    roIssueQty : n('RO Issue Qty in MT'),
+    bags       : n('Liffting No Bags'),
+    liftQty    : n('Liffting Qty in MT'),
+    truck      : g('Truck No'),
+    balance    : n('RO Balance Qty in MT'),
+    fortnight  : g('Month wise Fortnight'),
+    date       : g('Actual Date liffting'),
+  };
+}
+
+function fillDrops(){
+  fd('fMonth',   sortMonths([...new Set(allData.map(r=>r.month).filter(Boolean))]));
+  fd('fGodown',  [...new Set(allData.map(r=>r.godown).filter(Boolean))].sort());
+  fd('fESY',     [...new Set(allData.map(r=>r.esy).filter(Boolean))].sort());
+  fd('fQuarter', [...new Set(allData.map(r=>r.allocQ).filter(Boolean))].sort());
+  fd('fFRK',     [...new Set(allData.map(r=>r.frk).filter(Boolean))].sort());
+  fd('fAgency',  [...new Set(allData.map(r=>r.agency).filter(Boolean))].sort());
+  fd('fDistrict',[...new Set(allData.map(r=>r.district).filter(Boolean))].sort());
+  fd('fLinkFSD', [...new Set(allData.map(r=>r.linkFSD).filter(Boolean))].sort());
+  // Depot chart filters
+  populateDepotFilters();
+}
+
+function populateDepotFilters(){
+  const months=sortMonths([...new Set(allData.map(r=>r.month).filter(Boolean))]);
+  const sel=document.getElementById('depotMonthFilter');
+  const cur=sel.value;
+  while(sel.options.length>1)sel.remove(1);
+  months.forEach(m=>sel.add(new Option(m,m)));
+  if(months.includes(cur))sel.value=cur;
+
+  const depots=[...new Set(allData.map(r=>r.godown).filter(Boolean))].sort();
+  const dsel=document.getElementById('depotGodownFilter');
+  const dcur=dsel.value;
+  while(dsel.options.length>1)dsel.remove(1);
+  depots.forEach(d=>dsel.add(new Option(d,d)));
+  if(depots.includes(dcur))dsel.value=dcur;
+}
+
+function fd(id,opts){
+  const s=document.getElementById(id), cur=s.value;
+  while(s.options.length>1)s.remove(1);
+  opts.forEach(o=>s.add(new Option(o,o)));
+  if(opts.includes(cur))s.value=cur;
+}
+
+function applyAll(){
+  const month   =document.getElementById('fMonth').value;
+  const godown  =document.getElementById('fGodown').value;
+  const esy     =document.getElementById('fESY').value;
+  const quarter =document.getElementById('fQuarter').value;
+  const frk     =document.getElementById('fFRK').value;
+  const agency  =document.getElementById('fAgency').value;
+  const district=document.getElementById('fDistrict').value;
+  const linkFSD =document.getElementById('fLinkFSD').value;
+  const q       =document.getElementById('gSearch').value.toLowerCase().trim();
+
+  filteredData=allData.filter(r=>{
+    if(month    && r.month   !==month)    return false;
+    if(godown   && r.godown  !==godown)   return false;
+    if(esy      && r.esy     !==esy)      return false;
+    if(quarter  && r.allocQ  !==quarter)  return false;
+    if(frk      && r.frk     !==frk)      return false;
+    if(agency   && r.agency  !==agency)   return false;
+    if(district && r.district!==district) return false;
+    if(linkFSD  && r.linkFSD !==linkFSD)  return false;
+    if(q&&!(r.agency.toLowerCase().includes(q)||r.truck.toLowerCase().includes(q)||r.godown.toLowerCase().includes(q)||r.dosRO.toLowerCase().includes(q)||r.district.toLowerCase().includes(q)||r.linkFSD.toLowerCase().includes(q)))return false;
+
+    return true;
+  });
+
+  document.getElementById('showCnt').textContent=filteredData.length.toLocaleString('en-IN');
+  document.getElementById('totCnt').textContent =allData.length.toLocaleString('en-IN');
+  pg=1;
+  updKPIs(); updCharts(); renderTbl();
+}
+
+function resetAll(){
+  ['fMonth','fGodown','fESY','fQuarter','fFRK','fAgency','fDistrict','fLinkFSD'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('gSearch').value='';
+  applyAll();
+}
+
+// ── KPIs ──
+function updKPIs(){
+  const tL=filteredData.reduce((s,r)=>s+r.liftQty,0);
+  const tB=filteredData.reduce((s,r)=>s+r.bags,0);
+  const tBal=filteredData.reduce((s,r)=>s+r.balance,0);
+  const gds=new Set(filteredData.map(r=>r.godown).filter(Boolean));
+  const avg=filteredData.length?tL/filteredData.length:0;
+  const aL=allData.reduce((s,r)=>s+r.liftQty,0)||1;
+  const aR=allData.length||1;
+  const aG=new Set(allData.map(r=>r.godown).filter(Boolean)).size||1;
+
+  const tRO=filteredData.reduce((s,r)=>s+r.roIssueQty,0);
+  const aRO=allData.reduce((s,r)=>s+r.roIssueQty,0)||1;
+  const offCount=new Set(filteredData.map(r=>r.offlineRO).filter(v=>v&&v!=='0'&&v!=='—')).size;
+  const aOffCount=new Set(allData.map(r=>r.offlineRO).filter(v=>v&&v!=='0'&&v!=='—')).size||1;
+  // k1=RO Issue, k2=Lifting, k3=Balance, k4=Godowns, k5=Bags, k6=Avg, k7=OfflineRO
+  sv('k1',fN(tRO));   sv('kb1',(tRO/aRO*100).toFixed(1)+'%');
+  sv('k2',fN(tL));    sv('kb2',(tL/aL*100).toFixed(1)+'%');
+  sv('k3',fN(tBal));  sv('kb3',(tBal/(allData.reduce((s,r)=>s+r.balance,0)||1)*100).toFixed(1)+'%');
+  sv('k4',gds.size);  sv('kb4',(gds.size/aG*100).toFixed(1)+'%');
+  sv('k5',fN(tB));    sv('kb5','60%');
+  sv('k6',avg.toFixed(2)+' MT'); sv('kb6',Math.min(100,avg/10).toFixed(1)+'%');
+  sv('k7',offCount.toLocaleString('en-IN')); sv('kb7',(offCount/aOffCount*100).toFixed(1)+'%');
+  setTimeout(()=>{for(let i=1;i<=7;i++){const e=document.getElementById('kb'+i);if(e)e.style.width=e.textContent;}},50);
+}
+
+function sv(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function fN(n){return n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+// ── CHARTS ──
+const PALS={
+  '':    ['#00c6ff','#f7b500','#00e676','#ff4d6d','#b388ff','#ff7043','#40c4ff','#ffd740'],
+  ocean: ['#00c6ff','#0072ff','#00e5ff','#18ffff','#40c4ff','#0091ea','#80d8ff','#00b0ff'],
+  fire:  ['#ff6d00','#ffab00','#ff3d00','#ff9100','#ffd740','#ff6e40','#ffca28','#ff8a65'],
+  forest:['#00e676','#69f0ae','#00bfa5','#b9f6ca','#1de9b6','#00c853','#a7ffeb','#64ffda'],
+  royal: ['#d500f9','#aa00ff','#e040fb','#ce93d8','#ea80fc','#7c4dff','#b388ff','#9c27b0'],
+  light: ['#0066cc','#e67e00','#00994d','#cc0033','#6633cc','#cc4400','#0099cc','#cc9900'],
+};
+function pal(){return PALS[document.documentElement.getAttribute('data-theme')||'']||PALS[''];}
+function cv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function gdef(){return{plugins:{legend:{labels:{color:cv('--t2'),font:{family:'Noto Sans',size:11}}}},scales:{x:{ticks:{color:cv('--t3'),font:{size:10}},grid:{color:'rgba(26,48,80,.4)'}},y:{ticks:{color:cv('--t3'),font:{size:10}},grid:{color:'rgba(26,48,80,.4)'}}}};}
+
+function mkBar(id,labels,data,lbl,ci=0){
+  if(charts[id])charts[id].destroy();
+  const p=pal(),ctx=document.getElementById(id).getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,240);
+  g.addColorStop(0,p[ci%p.length]);g.addColorStop(1,p[ci%p.length]+'33');
+  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:lbl,data,backgroundColor:g,borderColor:p[ci%p.length],borderWidth:1.5,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:true,animation:{duration:600},...gdef()}});
+}
+function mkLine(id,labels,data,lbl,ci=0){
+  if(charts[id])charts[id].destroy();
+  const p=pal(),ctx=document.getElementById(id).getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,240);
+  g.addColorStop(0,p[ci%p.length]+'66');g.addColorStop(1,'transparent');
+  charts[id]=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:lbl,data,borderColor:p[ci%p.length],backgroundColor:g,fill:true,tension:.4,pointBackgroundColor:p[ci%p.length],pointRadius:4}]},options:{responsive:true,maintainAspectRatio:true,animation:{duration:600},...gdef()}});
+}
+function mkDnt(id,labels,data){
+  if(charts[id])charts[id].destroy();
+  const p=pal();
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:p.slice(0,labels.length),borderColor:cv('--panel'),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:true,animation:{duration:600},plugins:{legend:{position:'bottom',labels:{color:cv('--t2'),font:{size:10},boxWidth:12,padding:8}}}}});
+}
+function mkPie(id,labels,data){
+  if(charts[id])charts[id].destroy();
+  const p=pal();
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'pie',data:{labels,datasets:[{data,backgroundColor:p.slice(0,labels.length),borderColor:cv('--panel'),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:true,animation:{duration:600},plugins:{legend:{position:'bottom',labels:{color:cv('--t2'),font:{size:10},boxWidth:12,padding:8}}}}});
+}
+
+function mkMultiBar(id,labels,datasets,stacked=false){
+  if(charts[id])charts[id].destroy();
+  const p=pal();
+  const ctx=document.getElementById(id).getContext('2d');
+  const ds=datasets.map((d,i)=>({
+    label:d.label,
+    data:d.data,
+    backgroundColor:p[i%p.length]+'bb',
+    borderColor:p[i%p.length],
+    borderWidth:1.5,
+    borderRadius:stacked?0:4,
+    stack: stacked?'s':undefined,
+    borderSkipped:false
+  }));
+  charts[id]=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:ds},
+    options:{
+      responsive:true,maintainAspectRatio:true,animation:{duration:600},
+      plugins:{legend:{labels:{color:cv('--t2'),font:{family:'Noto Sans',size:11}}}},
+      scales:{
+        x:{stacked,ticks:{color:cv('--t3'),font:{size:10}},grid:{color:'rgba(26,48,80,.4)'}},
+        y:{stacked,ticks:{color:cv('--t3'),font:{size:10}},grid:{color:'rgba(26,48,80,.4)'}}
+      }
+    }
+  });
+}
+
+function mkGrouped(id,labels,d1,d2,d3,type){
+  if(charts[id])charts[id].destroy();
+  const p=pal();
+  const ctx=document.getElementById(id).getContext('2d');
+  const makeDS=(label,data,ci,fill)=>({
+    label,data,
+    backgroundColor: type==='bar'?p[ci%p.length]+'aa':p[ci%p.length]+'33',
+    borderColor:p[ci%p.length],
+    borderWidth:type==='bar'?1.5:2,
+    borderRadius:type==='bar'?4:0,
+    fill: type==='line'?fill:false,
+    tension:.4,
+    pointRadius: type==='line'?4:0,
+    pointBackgroundColor:p[ci%p.length],
+    type: type==='bar'?'bar':'line'
+  });
+  charts[id]=new Chart(ctx,{
+    type: type==='bar'?'bar':'line',
+    data:{labels,datasets:[makeDS('RO Issue Qty (MT)',d1,1,false),makeDS('Lifting MT',d2,0,false),makeDS('RO Balance MT',d3,3,false)]},
+    options:{responsive:true,maintainAspectRatio:true,animation:{duration:600},
+      plugins:{legend:{labels:{color:cv('--t2'),font:{family:'Noto Sans',size:11}}}},
+      scales:{x:{ticks:{color:cv('--t3'),font:{size:10}},grid:{color:'rgba(26,48,80,.4)'}},
+              y:{ticks:{color:cv('--t3'),font:{size:10}},grid:{color:'rgba(26,48,80,.4)'}}}}
+  });
+}
+
+function updDepotChart(){
+  const selMonth=document.getElementById('depotMonthFilter').value;
+  const selDepot=document.getElementById('depotGodownFilter').value;
+
+  // Source data: filteredData filtered further by depot chart's own filters
+  let src=filteredData;
+  if(selMonth) src=src.filter(r=>r.month===selMonth);
+  if(selDepot) src=src.filter(r=>r.godown===selDepot);
+
+  if(!src.length){
+    if(charts['cDepot'])charts['cDepot'].destroy();
+    return;
+  }
+
+  if(selDepot){
+    // Single depot selected: show fortnight trend for that depot
+    const fnMap={};
+    src.forEach(r=>{if(r.fortnight)fnMap[r.fortnight]=(fnMap[r.fortnight]||0)+r.liftQty;});
+    const fnL=sortMonths(Object.keys(fnMap)),fnV=fnL.map(k=>+fnMap[k].toFixed(2));
+    ctypes.depot==='bar'?mkBar('cDepot',fnL,fnV,'Lifting MT ('+selDepot+')',5):mkLine('cDepot',fnL,fnV,'Lifting MT ('+selDepot+')',5);
+  } else {
+    // All depots: show each depot's fortnight as grouped bars
+    const fortnights=sortMonths([...new Set(src.map(r=>r.fortnight).filter(Boolean))]);
+    const depots=[...new Set(src.map(r=>r.godown).filter(Boolean))].sort();
+    // limit to top 8 depots by total lifting
+    const depotTotals=depots.map(d=>({d,v:src.filter(r=>r.godown===d).reduce((s,r)=>s+r.liftQty,0)}))
+      .sort((a,b)=>b.v-a.v).slice(0,8).map(x=>x.d);
+    const datasets=depotTotals.map(dep=>({
+      label:dep.length>22?dep.slice(0,22)+'…':dep,
+      data:fortnights.map(fn=>+src.filter(r=>r.godown===dep&&r.fortnight===fn).reduce((s,r)=>s+r.liftQty,0).toFixed(2))
+    }));
+    mkMultiBar('cDepot',fortnights,datasets,false);
+  }
+}
+
+function sortMonths(months){
+  var MO={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  function parseM(s){
+    if(!s) return {y:9999,m:99};
+    var low=s.toLowerCase(), y=9999, m=99;
+    // find month name
+    for(var k in MO){ if(low.indexOf(k)!==-1){m=MO[k];break;} }
+    // find year — scan tokens
+    var tokens=s.split(/[^0-9]+/);
+    for(var i=0;i<tokens.length;i++){
+      var n=parseInt(tokens[i],10);
+      if(isNaN(n)) continue;
+      if(n>=2000&&n<=2099){y=n;break;}
+      if(n>=20&&n<=99){y=2000+n;break;}
+    }
+    return {y:y,m:m};
+  }
+  return months.slice().sort(function(a,b){
+    var pa=parseM(a), pb=parseM(b);
+    if(pa.y!==pb.y) return pa.y-pb.y;
+    return pa.m-pb.m;
+  });
+}
+
+function agg(key,val='liftQty'){const m={};filteredData.forEach(r=>{if(r[key])m[r[key]]=(m[r[key]]||0)+r[val];});return m;}
+
+function updCharts(){
+  updDepotChart();
+  const mM=agg('month'),mL=sortMonths(Object.keys(mM)),mV=mL.map(k=>+mM[k].toFixed(2));
+  ctypes.monthly==='bar'?mkBar('cMonthly',mL,mV,'Lifting MT',0):mkLine('cMonthly',mL,mV,'Lifting MT',0);
+
+  const gM=agg('godown'),gE=Object.entries(gM).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const gL=gE.map(e=>e[0].split(',')[0].trim()),gV=gE.map(e=>+e[1].toFixed(2));
+  ctypes.godown==='doughnut'?mkDnt('cGodown',gL,gV):mkPie('cGodown',gL,gV);
+
+  const eM=agg('esy'),eL=Object.keys(eM),eV=eL.map(k=>+eM[k].toFixed(2));
+  ctypes.esy==='bar'?mkBar('cESY',eL,eV,'Lifting MT',1):mkDnt('cESY',eL,eV);
+
+  // Quarter × ESY grouped bar
+  const qLabels=[...new Set(filteredData.map(r=>r.allocQ).filter(Boolean))].sort();
+  const esyList=[...new Set(filteredData.map(r=>r.esy).filter(Boolean))].sort();
+  const qDatasets=esyList.map(esy=>({
+    label:esy,
+    data:qLabels.map(q=>+filteredData.filter(r=>r.allocQ===q&&r.esy===esy).reduce((s,r)=>s+r.liftQty,0).toFixed(2))
+  }));
+  mkMultiBar('cQuarter',qLabels,qDatasets,ctypes.quarter==='stacked');
+
+  const fM=agg('fortnight'),fL=sortMonths(Object.keys(fM)),fV=fL.map(k=>+fM[k].toFixed(2));
+  mkLine('cFortnight',fL,fV,'Lifting MT',3);
+
+  // Crop Year Chart
+  const cyM=agg('cropYear'),cyE=Object.entries(cyM).sort((a,b)=>a[0].localeCompare(b[0]));
+  const cyL=cyE.map(e=>e[0]),cyV=cyE.map(e=>+e[1].toFixed(2));
+  ctypes.cropYear==='bar'?mkBar('cCropYear',cyL,cyV,'Lifting MT',4):mkDnt('cCropYear',cyL,cyV);
+
+  // Link FSD Chart - top 15 by lifting
+  const lfM=agg('linkFSD'),lfE=Object.entries(lfM).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const lfL=lfE.map(e=>e[0]),lfV=lfE.map(e=>+e[1].toFixed(2));
+  ctypes.linkFSD==='bar'?mkBar('cLinkFSD',lfL,lfV,'Lifting MT',5):mkLine('cLinkFSD',lfL,lfV,'Lifting MT',5);
+
+  // District Wise Chart - top 10
+  const dM=agg('district'),dE=Object.entries(dM).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const dL=dE.map(e=>e[0]),dV=dE.map(e=>+e[1].toFixed(2));
+  ctypes.district==='bar'?mkBar('cDistrict',dL,dV,'Lifting MT',6):mkDnt('cDistrict',dL,dV);
+
+  // Top Agency Chart - top 10
+  const agM=agg('agency'),agE=Object.entries(agM).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const agL=agE.map(e=>e[0].length>20?e[0].slice(0,20)+'…':e[0]),agV=agE.map(e=>+e[1].toFixed(2));
+  ctypes.agency==='bar'?mkBar('cAgency',agL,agV,'Lifting MT',7):mkDnt('cAgency',agE.map(e=>e[0]),agV);
+
+  // FRK vs NON-FRK
+  const frkM=agg('frk'),frkL=Object.keys(frkM),frkV=frkL.map(k=>+frkM[k].toFixed(2));
+  ctypes.frk==='doughnut'?mkDnt('cFRK',frkL,frkV):mkPie('cFRK',frkL,frkV);
+
+  // Grouped: RO Issue vs Lifting vs Balance month-wise
+  const cmpMonths=sortMonths([...new Set(filteredData.map(r=>r.month).filter(Boolean))]);
+  const roIssArr=cmpMonths.map(m=>+filteredData.filter(r=>r.month===m).reduce((s,r)=>s+r.roIssueQty,0).toFixed(2));
+  const liftArr =cmpMonths.map(m=>+filteredData.filter(r=>r.month===m).reduce((s,r)=>s+r.liftQty,0).toFixed(2));
+  const balArr  =cmpMonths.map(m=>+filteredData.filter(r=>r.month===m).reduce((s,r)=>s+r.balance,0).toFixed(2));
+  mkGrouped('cCompare',cmpMonths,roIssArr,liftArr,balArr,ctypes.compare);
+
+  // Revenue District chart
+  var rdM=agg('revDistrict'),rdE=Object.entries(rdM).filter(function(e){return e[0]&&e[0]!=='';}).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+  var rdL=rdE.map(function(e){return e[0];}),rdV=rdE.map(function(e){return +e[1].toFixed(2);});
+  if(rdL.length>0){ ctypes.revDist==='bar'?mkBar('cRevDist',rdL,rdV,'Lifting MT',5):mkDnt('cRevDist',rdL,rdV); }
+  else { if(charts['cRevDist'])charts['cRevDist'].destroy(); }
+
+  // ESY x Month wise grouped
+  var esyList2=[...new Set(filteredData.map(function(r){return r.esy;}).filter(Boolean))].sort();
+  var allMonths2=sortMonths([...new Set(filteredData.map(function(r){return r.month;}).filter(Boolean))]);
+  var esyMonDatasets=esyList2.map(function(esy,idx){
+    return {label:esy, data:allMonths2.map(function(m){
+      return +filteredData.filter(function(r){return r.esy===esy&&r.month===m;}).reduce(function(s,r){return s+r.liftQty;},0).toFixed(2);
+    })};
+  });
+  mkMultiBar('cEsyMonth',allMonths2,esyMonDatasets,ctypes.esyMonth==='stacked');
+
+  // Agency × ESY comparison — top 12 agencies overall
+  const topAgencies=Object.entries(
+    filteredData.reduce((m,r)=>{if(r.agency){m[r.agency]=(m[r.agency]||0)+r.liftQty;}return m;},{})
+  ).sort((a,b)=>b[1]-a[1]).slice(0,12).map(e=>e[0]);
+  const esyListA=[...new Set(filteredData.map(r=>r.esy).filter(Boolean))].sort();
+  const agESYDatasets=esyListA.map(esy=>({
+    label:esy,
+    data:topAgencies.map(ag=>+filteredData.filter(r=>r.agency===ag&&r.esy===esy).reduce((s,r)=>s+r.liftQty,0).toFixed(2))
+  }));
+  const shortAgLabels=topAgencies.map(a=>a.length>18?a.slice(0,18)+'…':a);
+  mkMultiBar('cAgencyESY',shortAgLabels,agESYDatasets,ctypes.agencyESY==='stacked');
+}
+
+function tog(name){
+  if(name==='monthly')  ctypes.monthly =ctypes.monthly ==='bar'?'line':'bar';
+  if(name==='godown')   ctypes.godown  =ctypes.godown  ==='doughnut'?'pie':'doughnut';
+  if(name==='esy')      ctypes.esy     =ctypes.esy     ==='bar'?'doughnut':'bar';
+  if(name==='cropYear') ctypes.cropYear=ctypes.cropYear==='bar'?'doughnut':'bar';
+  if(name==='linkFSD')  ctypes.linkFSD =ctypes.linkFSD ==='bar'?'line':'bar';
+  if(name==='district') ctypes.district=ctypes.district==='bar'?'doughnut':'bar';
+  if(name==='agency')   ctypes.agency  =ctypes.agency  ==='bar'?'doughnut':'bar';
+  if(name==='frk')      ctypes.frk     =ctypes.frk     ==='doughnut'?'pie':'doughnut';
+  if(name==='compare')  ctypes.compare  =ctypes.compare  ==='bar'?'line':'bar';
+  if(name==='quarter')  ctypes.quarter  =ctypes.quarter  ==='grouped'?'stacked':'grouped';
+  if(name==='agencyESY')ctypes.agencyESY=ctypes.agencyESY==='grouped'?'stacked':'grouped';
+  if(name==='depot')    {ctypes.depot=ctypes.depot==='bar'?'line':'bar';updDepotChart();return;}
+  if(name==='revDist')  ctypes.revDist  =ctypes.revDist  ==='bar'?'doughnut':'bar';
+  if(name==='esyMonth') ctypes.esyMonth =ctypes.esyMonth ==='grouped'?'stacked':'grouped';
+  updCharts();
+}
+
+// ── TABLE ──
+function sortBy(key){
+  if(sortKey===key)sortAsc=!sortAsc;else{sortKey=key;sortAsc=true;}
+  document.querySelectorAll('th').forEach(t=>{t.classList.remove('sa','sd');});
+  const ths=document.querySelectorAll('th');
+  const ks=['srno','frk','cropYear','esy','allocQ','month','actualDate','dosRO','offlineRO','roIssueMonth','agency','district','linkFSD','godown','commodity','roIssueQty','bags','liftQty','truck','balance','fortnight'];
+  const idx=ks.indexOf(key);
+  if(idx>=0&&ths[idx])ths[idx].classList.add(sortAsc?'sa':'sd');
+  filteredData.sort((a,b)=>{
+    let va=a[key]||'',vb=b[key]||'';
+    if(typeof va==='number')return sortAsc?va-vb:vb-va;
+    return sortAsc?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
+  });
+  pg=1;renderTbl();
+}
+
+function renderTbl(){
+  const tb=document.getElementById('tbody');
+  const em=document.getElementById('emptyT');
+  const bd=document.getElementById('tbadge');
+  if(!filteredData.length){tb.innerHTML='';em.style.display='block';bd.textContent='0 Records';renderPgn();return;}
+  em.style.display='none';
+  const s=(pg-1)*PG;
+  tb.innerHTML=filteredData.slice(s,s+PG).map((r,i)=>`
+    <tr>
+      <td style="color:var(--t3);font-size:.72rem;text-align:center">${s+i+1}</td>
+      <td><span class="tg ${r.frk==='FRK'?'te':'tfrk'}">${r.frk||'—'}</span></td>
+      <td style="color:var(--t2);font-size:.73rem">${r.cropYear||'—'}</td>
+      <td><span class="tg te">${r.esy||'—'}</span></td>
+      <td style="color:var(--a5);font-size:.73rem;text-align:center">${r.allocQ||'—'}</td>
+      <td class="tm">${r.month||'—'}</td>
+      <td style="font-size:.73rem;color:var(--t2)">${r.actualDate||'—'}</td>
+      <td style="font-size:.72rem;color:var(--t3)">${r.dosRO||'—'}</td>
+      <td style="font-size:.72rem;color:var(--t3)">${r.offlineRO||'—'}</td>
+      <td style="font-size:.72rem;color:var(--t2)">${r.roIssueMonth||'—'}</td>
+      <td title="${r.agency||''}" style="min-width:160px;color:var(--t1)">${r.agency||'—'}</td>
+      <td style="color:var(--t2);font-size:.73rem">${r.district||'—'}</td>
+      <td style="font-size:.72rem;color:var(--a2)">${r.linkFSD||'—'}</td>
+      <td title="${r.godown||''}" style="color:#b388ff;min-width:140px">${r.godown||'—'}</td>
+      <td style="font-size:.72rem;color:var(--t3)">${r.commodity||'—'}</td>
+      <td style="color:var(--a6);text-align:right">${r.roIssueQty>0?r.roIssueQty.toFixed(2):'—'}</td>
+      <td style="color:var(--t2);text-align:right">${r.bags>0?r.bags.toLocaleString('en-IN'):'—'}</td>
+      <td class="tq" style="text-align:right">${r.liftQty>0?r.liftQty.toFixed(2):'0.00'}</td>
+      <td style="font-size:.72rem;color:var(--t1)">${r.truck||'—'}</td>
+      <td class="${r.balance>50?'tbh':'tbl'}" style="text-align:right">${r.balance.toFixed(2)}</td>
+      <td style="font-size:.72rem;color:var(--t3)">${r.fortnight||'—'}</td>
+    </tr>`).join('');
+  bd.textContent=`${filteredData.length.toLocaleString('en-IN')} Records`;
+  renderPgn();
+}
+
+function renderPgn(){
+  const tot=Math.ceil(filteredData.length/PG);
+  const el=document.getElementById('pgn');
+  if(tot<=1){el.innerHTML='';return;}
+  let h=`<button class="pg" onclick="goPg(${pg-1})" ${pg===1?'disabled':''}>‹ Prev</button>`;
+  const s=Math.max(1,pg-2),e=Math.min(tot,pg+2);
+  if(s>1)h+=`<button class="pg" onclick="goPg(1)">1</button><span class="pi">…</span>`;
+  for(let i=s;i<=e;i++)h+=`<button class="pg ${i===pg?'active':''}" onclick="goPg(${i})">${i}</button>`;
+  if(e<tot)h+=`<span class="pi">…</span><button class="pg" onclick="goPg(${tot})">${tot}</button>`;
+  h+=`<button class="pg" onclick="goPg(${pg+1})" ${pg===tot?'disabled':''}>Next ›</button>`;
+  h+=`<span class="pi">${pg}/${tot}</span>`;
+  el.innerHTML=h;
+}
+
+function goPg(p){
+  const tot=Math.ceil(filteredData.length/PG);
+  if(p<1||p>tot)return;
+  pg=p;renderTbl();
+  document.querySelector('.tcard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+  const h=['Sr No','FRK/NON-FRK','Crop Year','ESY','Alloc Q','RO Lifting Month','Actual Date','DOS RO No','Offline RO No','RO Issue Month','Agency/Department','Party District','Link FSD','Godown/Silo','Commodity','RO Issue Qty MT','Bags','Lifting MT','Truck No','RO Balance MT','Fortnight'];
+  const rows=filteredData.map(r=>[r.srno,r.frk,r.cropYear,r.esy,r.allocQ,r.month,r.actualDate,r.dosRO,r.offlineRO,r.roIssueMonth,r.agency,r.district,r.linkFSD,r.godown,r.commodity,r.roIssueQty,r.bags,r.liftQty,r.truck,r.balance,r.fortnight]);
+  const csv=[h,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`Ethanol_ESY_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.csv`;
+  a.click();
+}
+
+// ── THEME ──
+function setTheme(btn,t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelectorAll('.th-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(filteredData.length)updCharts();
+}
+
+// ── COUNTDOWN & AUTO REFRESH ──
+function startCD(){
+  clearInterval(cdTmr);
+  cdSec=REFRESH_S;
+  cdTmr=setInterval(()=>{
+    cdSec--;
+    document.getElementById('cdTxt').textContent=cdSec+'s';
+    if(cdSec<=0){cdSec=REFRESH_S;fetchData(false);}
+  },1000);
+}
+
+
+
+// ── LOADER / ERROR ──
+function showLdr(m){document.getElementById('ldrMsg').textContent=m;document.getElementById('ldr').style.display='flex';}
+function hideLdr(){document.getElementById('ldr').style.display='none';}
+function showErr(msg){
+  hideLdr();
+  const main=document.querySelector('.main');
+  const ex=document.getElementById('errBox');if(ex)ex.remove();
+  const d=document.createElement('div');d.id='errBox';d.className='errb';
+  d.innerHTML=`<h3>⚠️ Sheet Load नहीं हुई</h3>
+    <p style="margin-bottom:8px"><b>Error:</b> ${msg}</p>
+    <p>📌 <b>Fix करें:</b> Google Sheet → Share → "Anyone with the link" → Viewer set करें</p>
+    <p style="margin-top:6px;font-size:.75rem;color:var(--t3)">Sheet ID: ${SHEET_ID}</p>
+    <button style="margin-top:14px;padding:9px 24px;background:var(--a1);color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:.9rem" onclick="fetchData(true)">↻ फिर Try करें</button>`;
+  main.prepend(d);
+}
+</script>
+  <div id="debugContent"></div>
+</div>
+
+</body>
+</html>
